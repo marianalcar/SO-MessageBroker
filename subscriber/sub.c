@@ -10,21 +10,23 @@
 int main(int argc, char **argv) {
     char register_pipe_name[256];
     char pipe_name[256];
-    char box_name[256]; 
+    char box_name[32]; 
+
     if (argc != 4) {
         fprintf(stderr, "usage: sub <register_pipe_name> <box_name>\n");
         return -1;
     }
+
     strncpy(register_pipe_name,argv[1],256);
     strncpy(pipe_name,argv[2],256);
-    strncpy(box_name,argv[3],256);
-
+    strncpy(box_name,argv[3],32);
+    
 
     int tx = open(register_pipe_name, O_WRONLY);
     char text[289];
     strncpy(text,"2",1);
-    strncpy(text, pipe_name,256);
-    strncpy(text, box_name, 32);
+    strncpy(text + 1, pipe_name,256);
+    strncpy(text + 257, box_name, 32);
     write(tx,text,289);
 
     // remove pipe if it does exist
@@ -47,7 +49,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
     }
-
     close(tx);
     unlink(pipe_name);
     return 0;
