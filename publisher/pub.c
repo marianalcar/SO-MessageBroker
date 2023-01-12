@@ -45,6 +45,12 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    char message[1024];
+
+    while (scanf("%1024s", message) != EOF){
+        write(p, message, 1024);
+    }
+    
     close(rp);
     unlink(pipe_name);
     
