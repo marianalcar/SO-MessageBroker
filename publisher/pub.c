@@ -1,5 +1,9 @@
 #include "logging.h"
 #include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int main(int argc, char **argv) {
     char register_pipe_name[256];
@@ -13,5 +17,42 @@ int main(int argc, char **argv) {
     strncpy(pipe_name,argv[2],256);
     strncpy(box_name,argv[3],256);
 
+    int rp = open(register_pipe_name, O_WRONLY);
+    char text[289];
+    strncpy(text,"2",1);
+    strncpy(text, pipe_name,256);
+    strncpy(text, box_name, 32);
+    write(rp,text,289);
+
+    // remove pipe if it does exist
+    if (unlink(pipe_name) != 0 && errno != ENOENT) {
+        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", pipe_name,
+                strerror(errno));
+        return -1;
+    }
+
+    // create pipe
+    if (mkfifo(pipe_name, 0640) != 0) {
+        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
+        return -1;
+    }
+
+    // open pipe for writing
+    // this waits for someone to open it for reading
+    int p = open(pipe_name, O_WRONLY);
+    if (p == -1) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;
+    }
+
+    char message[1024];
+
+    while (scanf("%1024s", message) != EOF){
+        write(p, message, 1024);
+    }
+    
+    close(rp);
+    unlink(pipe_name);
+    
     return 0;
 }
