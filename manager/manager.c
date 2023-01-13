@@ -1,6 +1,11 @@
 #include "logging.h"
 #include <string.h>
 
+void fill_string(char* input_string, char* dest, size_t size) {
+    memset(dest, '\0', size);
+    memcpy(dest, input_string, strlen(input_string));
+}
+
 static void print_usage() {
     fprintf(stderr, "usage: \n"
                     "   manager <register_pipe_name> create <box_name>\n"
@@ -16,16 +21,16 @@ int main(int argc, char **argv) {
         print_usage();
         return -1;
     }
-    strncpy(register_pipe_name,argv[1],256);
-    strncpy(pipe_name,argv[2],256);
+    fill_string(argv[1], register_pipe_name,256);
+    fill_string(argv[2], pipe_name,256);
 
 
     if(strncmp(argv[3], "create",6)) {
-        strncpy(box_name,argv[4],32);
+        fill_string(argv[4], box_name,32);
     }
 
     else if(strncmp(argv[3],"remove",6)) {
-        strncpy(box_name,argv[4],32);
+        fill_string(argv[4], box_name,32);
     }
 
     else if(strncmp(argv[3],"list",4)) {

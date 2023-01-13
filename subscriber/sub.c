@@ -7,6 +7,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+void fill_string(char* input_string, char* dest,size_t size) {
+    memset(dest, '\0', size);
+    memcpy(dest, input_string, strlen(input_string));
+}
+
 int main(int argc, char **argv) {
     char register_pipe_name[256];
     char pipe_name[256];
@@ -17,9 +22,9 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    strncpy(register_pipe_name,argv[1],256);
-    strncpy(pipe_name,argv[2],256);
-    strncpy(box_name,argv[3],32);
+    fill_string(argv[1], register_pipe_name,256);
+    fill_string(argv[2], pipe_name,256);
+    fill_string(argv[3], box_name,32);
     
 
     int tx = open(register_pipe_name, O_WRONLY);
