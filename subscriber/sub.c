@@ -6,10 +6,16 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
 
 void fill_string(char* input_string, char* dest,size_t size) {
     memset(dest, '\0', size);
     memcpy(dest, input_string, strlen(input_string));
+}
+
+
+void sigint_handler(int signo) {
+    exit(0);
 }
 
 int main(int argc, char **argv) {
@@ -49,11 +55,27 @@ int main(int argc, char **argv) {
 
     // open pipe for writing
     // this waits for someone to open it for reading
-    int rx = open(pipe_name, O_RDONLY);
-    if (rx == -1) {
+    int p = open(pipe_name, O_RDONLY);
+    if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
     }
+
+    signal(SIGINT,sigint_handler);
+
+    char message[1024];
+
+    while (1) {
+        char message[1024];
+        ssize_t ret = read(p, message, 1024 - 1);
+        if (ret == 0) {
+            fprintf(stderr, "[INFO]: pipe closed\n");
+            break;
+        } else if (ret == -1) {
+            sigint_handler;
+        }
+    }
+
     close(tx);
     unlink(pipe_name);
     return 0;
