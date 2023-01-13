@@ -9,10 +9,11 @@
 
 void fill_string(char* input_string, char* dest, size_t size) {
     memset(dest, '\0', size);
-    memcpy(dest, input_string, strlen(input_string));
+    memcpy(dest , input_string, strlen(input_string));
 }
 
 int main(int argc, char **argv) {
+    printf("ola");
     char register_pipe_name[256];
     char pipe_name[256];
     char box_name[32]; 
@@ -27,10 +28,13 @@ int main(int argc, char **argv) {
 
     int rp = open(register_pipe_name, O_WRONLY);
     char text[289];
-    strncpy(text,"2",1);    
+
+    //strncpy(text,'2',1);    
     strncpy(text + 1, pipe_name,256);    
     strncpy(text + 257, box_name, 32);
-    write(rp,text,289);
+    if (write(rp,text,289) == -1){
+        return -1;
+    };
 
     // remove pipe if it does exist
     if (unlink(pipe_name) != 0 && errno != ENOENT) {
@@ -58,7 +62,9 @@ int main(int argc, char **argv) {
 
     while (scanf("%1024s", message) != EOF){
         fill_string(message,message_full,1024);
-        write(p, message, 1024);
+        if (write(p, message, 1024) == -1){
+            return -1;
+        };
     }
 
     close(rp);

@@ -8,7 +8,9 @@
 #include <unistd.h>
 
 int main(int argc, char **argv) {
-    char register_pipe_name[256];
+    (void)argc;
+    (void)argv;
+    /*char register_pipe_name[256];
     int max_sessions;
     char char_code;
     int code;
@@ -52,6 +54,7 @@ int main(int argc, char **argv) {
             case 8:
                 
         }
-    }
+    }*/
+    return 0;
 
 }

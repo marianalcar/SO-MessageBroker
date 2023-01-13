@@ -38,7 +38,9 @@ int main(int argc, char **argv) {
     strncpy(text,"2",1);
     strncpy(text + 1, pipe_name,256);
     strncpy(text + 257, box_name, 32);
-    write(tx,text,289);
+    if (write(tx,text,289) == -1){
+        return -1;
+    };
 
     // remove pipe if it does exist
     if (unlink(pipe_name) != 0 && errno != ENOENT) {
