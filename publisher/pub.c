@@ -58,13 +58,16 @@ int main(int argc, char **argv) {
     }
 
     char message_full[1024];
-    char message[1024];
+    char message[1025];
+    char message_final[1025];
+
 
     while (scanf("%1024s", message) != EOF){
         fill_string(message,message_full,1024);
         if (write(p, message, 1024) == -1){
             return -1;
         };
+
     }
 
     close(rp);
