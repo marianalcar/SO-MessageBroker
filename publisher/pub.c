@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
     memset(text, '\0', 289);
 
     fill_string("2", text ,0);
-    fill_string(argv[1], text, 1);   
-    fill_string(argv[2], text, 257); 
+    fill_string(argv[2], text, 1);   
+    fill_string(argv[3], text, 257); 
     text[288] = '\0';
 
     if(write(rp,text,289) == -1) {

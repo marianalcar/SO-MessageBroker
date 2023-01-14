@@ -27,15 +27,19 @@ int main(int argc, char **argv) {
     }
 
     int tx = open(register_pipe_name, O_WRONLY);
+    if (tx == -1 || tx == EOF) {
+        printf("mariana talvez seja gay\n");
+        return -1;
+    }
     char text[289];
     memset(text, '\0', 289);
 
     fill_string("2", text , 0);
-    fill_string(argv[1], text, 1);   
-    fill_string(argv[2], text, 257); 
+    fill_string(argv[2], text, 1);   
+    fill_string(argv[3], text, 257); 
     text[288] = '\0';
-    printf("%s\n",text);
     if (write(tx,text,289) == -1){
+        printf("mariana é gay\n");
         return -1;
     };
 
@@ -54,6 +58,7 @@ int main(int argc, char **argv) {
 
     // open pipe for writing
     // this waits for someone to open it for reading
+    
     int p = open(pipe_name, O_RDONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
