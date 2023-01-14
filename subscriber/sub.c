@@ -12,11 +12,11 @@ void fill_string(char* input_string, char* dest, int i) {
     memcpy(dest + i, input_string, strlen(input_string));
 }
 
-/*
-void sigint_handler(int signo) {
-    exit(0);
+
+int sigint_handler(int signo) {
+    return 0;
 }
-*/
+
 int main(int argc, char **argv) {
     char register_pipe_name[256];
     char pipe_name[256]; 
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    //signal(SIGINT,sigint_handler);
+    signal(SIGINT,sigint_handler);
 
     char message[1024];
 
@@ -70,7 +70,10 @@ int main(int argc, char **argv) {
             fprintf(stderr, "[INFO]: pipe closed\n");
             break;
         } else if (ret == -1) {
-          //  sigint_handler;
+            close(tx);
+            close(p);
+            unlink(pipe_name);
+            sigint_handler;
         }
     }
 
