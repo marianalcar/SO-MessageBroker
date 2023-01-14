@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdint.h>
+#include "state.h"
 
 void fill_string(char* input_string, char* dest, size_t size) {
     memset(dest, '\0', size);
@@ -16,28 +17,30 @@ void fill_string(char* input_string, char* dest, size_t size) {
 
 
 int main(int argc, char **argv) {
-
-    if(argc < 3 || argc > 6) {
-        return -1;
-
-    }
-
-    char register_pipe_name[256];
+    (void)argc;
+    (void)argv;
+    /*char register_pipe_name[256];
     char pipe_name[256];
     char box_name[32];
     char char_code[1024];
     char message[1024];
     int p;
     uint8_t code;
-    int max_sessions;
+    //int max_sessions;
 
+    typedef struct{
+        char name[32];
+        dir_entry_t file;
+
+    }box;
+
+    if(argc < 3 || argc > 6) {
+        return -1;
+
+    }
 
     fill_string(argv[1], register_pipe_name,256);
-    max_sessions = atoi(argv[2]);
-
-    
-
-
+    //max_sessions = atoi(argv[2]);
 
     if (unlink(register_pipe_name) != 0 && errno != ENOENT) {
         fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", register_pipe_name,
@@ -59,7 +62,10 @@ int main(int argc, char **argv) {
     }
     while (1) {
 
-        read(rx,char_code,1);
+        if (read(rx,char_code,1) == -1){
+            fprintf(stderr, "[ERR]: read failed: %s\n", strerror(errno));
+            return -1;
+        }
         code = (uint8_t)atoi(char_code);
         switch(code) {
             case 1:
@@ -105,9 +111,11 @@ int main(int argc, char **argv) {
 
             case 8:
                 break;
+            default:
+                break;
 
         }
-    }
+    }*/
     return 0;
 
 }

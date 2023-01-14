@@ -67,14 +67,13 @@ int main(int argc, char **argv) {
 
     char message_full[1025];
     char message[1024];
-    char message_final[1025];
     
 
     while (scanf("%s", &message[1024]) != EOF){
-        strncpy(message_full,"9",1);
-        strncpy(message_full + 1,message,1024);
-        fill_string(message_final,message_full,1025);
-        if (write(p, message_final, 1025) == -1){
+        fill_string("9", message_full,0);
+        fill_string( message,message_full,1);
+        message_full[1024] = '\0';
+        if (write(p, message_full, 1025) == -1){
             return -1;
         }
     }

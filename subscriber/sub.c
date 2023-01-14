@@ -13,9 +13,9 @@ void fill_string(char* input_string, char* dest, int i) {
 }
 
 
-int sigint_handler(int signo) {
+/*int sigint_handler(int signo) {
     return 0;
-}
+}*/
 
 int main(int argc, char **argv) {
     char register_pipe_name[256];
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     fill_string(argv[1], text, 1);   
     fill_string(argv[2], text, 257); 
     text[288] = '\0';
-
+    printf("%s\n",text);
     if (write(tx,text,289) == -1){
         return -1;
     };
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    signal(SIGINT,sigint_handler);
+    //signal(SIGINT,sigint_handler);
 
     char message[1024];
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
             close(tx);
             close(p);
             unlink(pipe_name);
-            sigint_handler;
+            //sigint_handler;
         }
     }
 
