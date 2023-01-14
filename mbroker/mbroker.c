@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdint.h>
 
 void fill_string(char* input_string, char* dest, size_t size) {
     memset(dest, '\0', size);
@@ -15,25 +16,21 @@ void fill_string(char* input_string, char* dest, size_t size) {
 
 
 int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
-    char register_pipe_name[256];
-    int max_sessions;
-    char char_code;
+
+    if(argc < 3 || argc > 6) {
+        return -1;
+
+    }
+
     char register_pipe_name[256];
     char pipe_name[256];
     char box_name[32];
     char char_code[1024];
-    char full_message[1025];
     char message[1024];
-    char code_uno[1];
-    int code9, p;
-    int code;
+    int p;
+    uint8_t code;
     int max_sessions;
 
-    if (argc != 1) {
-        return -1;
-    }
 
     fill_string(argv[1], register_pipe_name,256);
     max_sessions = atoi(argv[2]);
@@ -63,44 +60,40 @@ int main(int argc, char **argv) {
     while (1) {
 
         read(rx,char_code,1);
-        code = atoi(char_code);
+        code = (uint8_t)atoi(char_code);
         switch(code) {
             case 1:
 
-                sscanf(char_code, "%1c%256s%32s", &code_uno[1], &pipe_name[256], &box_name[32]);
+                read(rx, pipe_name,256);
+                read(rx, box_name, 32);
                 p = open(pipe_name, O_RDONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
                 }
-                read(p, full_message, 1025);
-                sscanf(full_message,"%1d%1024s", &code9, &message[1024]);
-
-
-
 
             case 2:
 
-                sscanf(char_code, "%1c%256s%32s", &code_uno[1], &pipe_name[256], &box_name[32]);
+                read(rx, pipe_name,256);
+                read(rx, box_name, 32);
                 p = open(pipe_name, O_RDONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
                 }
-
-
 
 
             case 3:
 
-                sscanf(char_code, "%1c%256s%32s", &code_uno[1], &pipe_name[256], &box_name[32]);
+                read(rx, pipe_name,256);
+                read(rx, box_name, 32);
                 p = open(pipe_name, O_RDONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
                 }
-                read(p, full_message, 1025);
-                sscanf(full_message,"%1d%1024s", &code9, &message[1024]);
+                read(p, char_code, 1);
+                read(p, message, 1024);
 
             case 4:
 
@@ -114,7 +107,8 @@ int main(int argc, char **argv) {
                 break;
 
         }
-    }*/
+    }
     return 0;
 
 }
+
