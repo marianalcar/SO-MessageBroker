@@ -75,7 +75,9 @@ void publisher_handle(int rx, char *box_name, char *pipe_name){
     }
     
         while(1) {
-        read(p, message,1024);
+        if(read(p, message,1024) == -1){
+            return;
+        }
         int i = tfs_open(box_name,0);
         tfs_write(i, message, 1024);
         tfs_close(i);
@@ -98,7 +100,10 @@ void subscriber_handle(int rx, char *box_name, char *pipe_name){
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return;
     }
-    write(p,message,1024);
+    if (write(p,message,1024) == -1){
+        return;
+    }
+    return;
  }
 
 void create_box_handle(int rx, char *box_name, char *pipe_name){

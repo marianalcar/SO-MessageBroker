@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     while (flag) {
         ssize_t ret = read(p, message, 1025 - 1);
         if(ret > 0) {
-            printf(stdout,"%s\n",message);
+            fprintf(stdout,"%s\n",message);
         }
         if (ret == 0) {
             fprintf(stderr, "[INFO]: pipe closed\n");
