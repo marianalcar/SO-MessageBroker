@@ -78,10 +78,6 @@ int main(int argc, char **argv) {
         ssize_t ret = read(p, message, 1025 );
         if(ret > 0) {
             fprintf(stdout,"%s\n",message);
-<<<<<<< HEAD
-=======
-            //printf(stdout,"%s\n",message);
->>>>>>> sub
         }
         if (ret == 0) {
             fprintf(stderr, "[INFO]: pipe closed\n");
