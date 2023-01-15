@@ -57,6 +57,7 @@ int check_if_has_publisher(char* name_box) {
 }
 
 void publisher_handle(int rx, char *box_name, char *pipe_name){
+    char message[1025];
     if (read(rx, pipe_name,256) == -1){
         return;
     };
@@ -72,30 +73,33 @@ void publisher_handle(int rx, char *box_name, char *pipe_name){
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return;
     }
-    /*
+    
         while(1) {
         read(p, message,1024);
-        printf("%s\n",message);
+        int i = tfs_open(box_name,0);
+        tfs_write(i, message, 1024);
+        tfs_close(i);
     }
-    */
    return;
-                
 }
 
 void subscriber_handle(int rx, char *box_name, char *pipe_name){
+    char message[1025];
     if (read(rx, pipe_name,256) == -1){
         return;
     }
     if (read(rx, box_name, 32) == -1){
         return;
     }
-    int p = open(pipe_name, O_RDONLY);
+    int i = tfs_open(box_name, 0);
+    tfs_read(i, message, 1024);
+    int p = open(pipe_name, O_WRONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return;
     }
-    return;
-}
+    write(p,message,1024);
+ }
 
 void create_box_handle(int rx, char *box_name, char *pipe_name){
     char message_error[1057];

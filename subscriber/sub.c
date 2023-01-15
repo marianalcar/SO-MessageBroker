@@ -26,6 +26,21 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: sub <register_pipe_name> <box_name>\n");
         return -1;
     }
+    char test[256];
+    memset(test, '\0', 256);
+    fill_string(argv[2],test, 0);
+    test[255] = '\0';
+    if (unlink(test) != 0 && errno != ENOENT) {
+        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
+                strerror(errno));
+        return -1;
+    }
+
+    // create pipe
+    if (mkfifo(test, 0640) != 0) {
+        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
+        return -1;
+    }
 
 
     char text[289];
@@ -47,22 +62,11 @@ int main(int argc, char **argv) {
     };
 
     // remove pipe if it does exist
-    if (unlink(argv[2]) != 0 && errno != ENOENT) {
-        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
-                strerror(errno));
-        return -1;
-    }
-
-    // create pipe
-    if (mkfifo(argv[2], 0640) != 0) {
-        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
-        return -1;
-    }
-
+    
     // open pipe for writing
     // this waits for someone to open it for reading
     
-    int p = open(argv[2], O_RDONLY);
+    int p = open(test, O_RDONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
@@ -70,20 +74,25 @@ int main(int argc, char **argv) {
 
     signal(SIGINT,sigint_handler);
 
-    char message[1024];
+    char message[1025];
+
 
     while (flag) {
-        ssize_t ret = read(p, message, 1024 - 1);
+        ssize_t ret = read(p, message, 1025 - 1);
+        if(ret > 0) {
+            printf(stdout,"%s\n",message);
+        }
         if (ret == 0) {
             fprintf(stderr, "[INFO]: pipe closed\n");
             break;
         } else if (ret == -1){
             break;
+
         }
     }
-
     close(tx);
     close(p);
-    unlink(argv[2]);
+    unlink(test);
+
     return 0;
 }
