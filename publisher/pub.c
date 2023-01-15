@@ -53,8 +53,6 @@ int main(int argc, char **argv) {
 
 
     // open pipe for writing
-
-
     p = open(pipe_name, O_WRONLY);
     if (p == -1) {
         printf("ola_open\n");
