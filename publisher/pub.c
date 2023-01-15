@@ -12,7 +12,6 @@ void fill_string(char* input_string, char* dest, int i) {
 }
 
 int main(int argc, char **argv) {
-    //char register_pipe_name[256];
     int p;
     char test[256];
     memset(test, '\0', 256);
@@ -54,17 +53,13 @@ int main(int argc, char **argv) {
     }
     
 
-    // open pipe for writin
-
+    // open pipe for writing
     
     p = open(test, O_WRONLY);
-
     if (p == -1 || p == EOF) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
     }
-
-
 
     char message_full[1025];
     char message[1024];
