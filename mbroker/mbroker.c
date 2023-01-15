@@ -19,8 +19,6 @@ typedef struct{
         uint64_t n_subscribers;
 }box;
 
-
-//TODO: CHECK MAX NUMBER OF BOXES
 box boxes[64];
 int count = 0;
 
@@ -100,8 +98,16 @@ int subscriber_handle(int rx, char *box_name, char *pipe_name){
 int create_box_handle(int rx, char *box_name, char *pipe_name){
     char message_error[1057];
     memset(message_error, '\0', 1057);
-    read(rx, pipe_name,256);
-    read(rx, box_name, 32);
+    if(read(rx, pipe_name,256) == -1){
+        return -1;
+    };
+    if(read(rx, box_name, 32) == -1){
+        return -1;
+    };
+
+    if (count == 64){
+        return -1;
+    }
 
     int p = open(pipe_name, O_WRONLY);
     if (p == -1) {
@@ -126,33 +132,45 @@ int create_box_handle(int rx, char *box_name, char *pipe_name){
         fill_string("-1", message_error, 1);  
         fill_string("open failed\n", message_error, 3);
         message_error[1056] = '\0'; 
-        write(p, message_error,1057);
+        if (write(p, message_error,1057) == -1){
+            return -1;
+        };
         close(p);
         return -1;
     }
+    //works
     boxes[count] = b;
     count ++;
     tfs_close(fh);
     fill_string("4", message_error ,0);
     fill_string("0", message_error, 1);  
     message_error[1056] = '\0'; 
-    write(p, message_error,1057);
+    if (write(p, message_error,1057)){
+        return -1;
+    };
+    fprintf(stdout, "OK\n");
     close(p);
-    return 0;;
+    return 0;
 }
 
-int remove_box_handler(int rx, char *box_name, char *pipe_name){
+int remove_box_handle(int rx, char *box_name, char *pipe_name){
     char message_error[1057];
     memset(message_error, '\0', 1057);
-    read(rx, pipe_name,256);
-    read(rx, box_name, 32);
+    if(read(rx, pipe_name,256) == -1){
+        return -1;
+    };
+    if (read(rx, box_name, 32) == -1){
+        return -1;
+    };
     int p = open(pipe_name, O_WRONLY);
     if (p == -1) {
         fill_string("6", message_error ,0);
         fill_string("0", message_error, 1);  
         fill_string("[ERR]: open failed", message_error, 2); 
         message_error[1056] = '\0';
-        write(p, message_error,1057);
+        if (write(p, message_error,1057)== -1){
+            return -1;
+        };
         return -1;
     }
     int fh = tfs_open(box_name, TFS_O_CREAT);
@@ -162,25 +180,30 @@ int remove_box_handler(int rx, char *box_name, char *pipe_name){
         fill_string("0", message_error, 1);  
         fill_string("[ERR]: open failed", message_error, 2); 
         message_error[1056] = '\0';
-        write(p, message_error,1057);
+        if (write(p, message_error,1057) == -1){
+            return -1;
+        };
         return -1;
     }
 
     tfs_close(fh);
     for(int i = 0; i < count; i++) {
-        if( strcmp(box_name, boxes[i].name)) {
+        if(strcmp(box_name, boxes[i].name) == 0) {
             removeElement(boxes,count,i);
+            inode_delete(get_open_file_entry(fh) -> of_inumber);
+            remove_from_open_file_table(fh);
+            count--;
+            fprintf(stdout, "OK\n");
             return 0;;
         }
     }
-    inode_delete(get_open_file_entry(fh) -> of_inumber);
-    remove_from_open_file_table(fh);
-    count--;
     
     fill_string("6", message_error ,0);
     fill_string("0", message_error, 1); 
     message_error[1056] = '\0';  
-    write(p, message_error,1057);
+    if (write(p, message_error,1057) == -1){
+        return -1;
+    };
     return -1;
 }
 
@@ -189,9 +212,7 @@ int main(int argc, char **argv) {
     char pipe_name[256];
     char box_name[32];
     char char_code[1024];
-    char message[1024];
 
-    int p,fh;
     uint8_t code;
     tfs_init(NULL);
     //int max_sessions;
