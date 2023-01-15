@@ -84,11 +84,11 @@ int main(int argc, char **argv) {
     
 
     // open pipe for writing
-    p = open(argv[2], O_RDONLY);
+    p = open(argv[2], O_RDWR);
     read(p,message ,1057);
     printf("%s\n",message);
     
-
+    close(p);
 
     return 0;
 }

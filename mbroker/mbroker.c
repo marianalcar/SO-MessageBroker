@@ -15,7 +15,7 @@
 typedef struct{
         char name[32];
         int number_subscribers;
-        bool have_publisher;
+        int have_publisher;
 
     }box;
 
@@ -110,14 +110,15 @@ int main(int argc, char **argv) {
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
-                printf("%s\n",pipe_name);
-                p = open(pipe_name, O_RDONLY);
+
+                p = open(pipe_name, O_RDWR);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
                 }
                 while(1) {
-                    read(p, message,1025);
+                    read(p, message,1024);
+                    printf("%s\n",message);
                 }
 
             case 2:
@@ -135,7 +136,7 @@ int main(int argc, char **argv) {
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
-                p = open(pipe_name, O_WRONLY);
+                p = open(pipe_name, O_RDWR);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
@@ -152,7 +153,7 @@ int main(int argc, char **argv) {
 
                 box b;
                 strncpy(b.name, box_name,32);
-                b.have_publisher = true;
+                b.have_publisher = 1;
                 fh = tfs_open(box_name, TFS_O_CREAT);
                 if (fh == -1) {
                     printf("error mothafucker\n");
@@ -168,7 +169,7 @@ int main(int argc, char **argv) {
                 fill_string("0", message_error, 1);  
                 message_error[1056] = '\0'; 
                 write(p, message_error,1057);
-
+                close(p);
             case 5:
                 // !!!!
                 // falta eleminar do array
