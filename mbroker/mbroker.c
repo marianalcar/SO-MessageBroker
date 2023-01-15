@@ -15,9 +15,9 @@
 typedef struct{
         char name[32];
         int number_subscribers;
-        int have_publisher;
-
-    }box;
+        uint64_t n_publisher;
+        uint64_t n_subscribers;
+}box;
 
 
 //TODO: CHECK MAX NUMBER OF BOXES
@@ -47,8 +47,55 @@ int check_new_box(char* name_box) {
     return 0;
 }
 
+int check_if_has_publisher(char* name_box) {
+    for(int i = 0; i < count; i++) {
+        if( strcmp(name_box, boxes[i].name)) {
+            if(boxes[i].n_publisher == 1){
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
 
+int publisher_handle(int rx, char *box_name, char *pipe_name){
+    if (read(rx, pipe_name,256) == -1){
+        return -1;
+    };
+    if (read(rx, box_name, 32) == -1){
+        return -1;
+    };
+    //printf("%s\n",pipe_name);
+    if (check_if_has_publisher(box_name) == -1){
+        return -1;
+    }
+    int p = open(pipe_name, O_RDONLY);
+    if (p == -1) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;
+    }
 
+    /*    while(1) {
+        read(p, message,1024);
+        printf("%s\n",meessage);
+                }*/
+    return 0;
+}
+
+int subscriber_handle(int rx, char *box_name, char *pipe_name){
+    if (read(rx, pipe_name,256) == -1){
+        return -1;
+    };
+    if (read(rx, box_name, 32) == -1){
+        return -1;
+    };
+    int p = open(pipe_name, O_RDONLY);
+    if (p == -1) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;;
+    }
+    return 0;
+}
 int main(int argc, char **argv) {
     (void)argc;
     char pipe_name[256];
@@ -58,7 +105,7 @@ int main(int argc, char **argv) {
     char message_error[1057];
     memset(message_error, '\0', 1057);
 
-    int p, fh;
+    int p,fh;
     uint8_t code;
     tfs_init(NULL);
     //int max_sessions;
@@ -97,34 +144,18 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-
         code = (uint8_t)atoi(char_code);
 
         switch(code) {
             case 1:
-
-                read(rx, pipe_name,256);
-                read(rx, box_name, 32);
-                printf("%s\n",pipe_name);
-                p = open(pipe_name, O_RDONLY);
-                if (p == -1) {
-                    fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
-                    return -1;
-                }
-                while(1) {
-                    read(p, message,1024);
-                    printf("%s\n",message);
+                if (publisher_handle(rx, box_name, pipe_name) == -1){
+                    break;
                 }
                 break;
 
             case 2:
-
-                read(rx, pipe_name,256);
-                read(rx, box_name, 32);
-                p = open(pipe_name, O_RDONLY);
-                if (p == -1) {
-                    fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
-                    return -1;
+                if (subscriber_handle(rx, box_name, pipe_name) == -1){
+                    break;
                 }
                 break;
 
@@ -132,11 +163,10 @@ int main(int argc, char **argv) {
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
-                printf("%s\n",pipe_name);
-                p = open(pipe_name, O_WRONLY);
+                p = open("/tmp/pipe", O_WRONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
-                    return -1;
+                    break;
                 }
 
                 if(check_new_box(box_name) == -1) {
@@ -150,7 +180,7 @@ int main(int argc, char **argv) {
 
                 box b;
                 strncpy(b.name, box_name,32);
-                b.have_publisher = 1;
+                b.n_publisher = 1;
                 fh = tfs_open(box_name, TFS_O_CREAT);
                 if (fh == -1) {
                     fill_string("4", message_error ,0);
@@ -159,7 +189,7 @@ int main(int argc, char **argv) {
                     message_error[1056] = '\0'; 
                     write(p, message_error,1057);
                     close(p);
-                    return -1;
+                    break;
                 }
                 boxes[count] = b;
                 count ++;
