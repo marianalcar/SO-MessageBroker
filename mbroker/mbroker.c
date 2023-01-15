@@ -75,7 +75,8 @@ void publisher_handle(int rx, char *box_name, char *pipe_name){
         return;
     }
     
-        while(1) {
+
+    while(1) {
         if(read(p, message,1024) == -1){
             return;
         }
@@ -83,8 +84,7 @@ void publisher_handle(int rx, char *box_name, char *pipe_name){
         tfs_write(i, message, 1024);
         tfs_close(i);
     }
-   return;
-}
+}   
 
 void subscriber_handle(int rx, char *box_name, char *pipe_name){
     char message[1025];
@@ -159,12 +159,12 @@ void create_box_handle(int rx, char *box_name, char *pipe_name){
     fill_string("4", message_error ,0);
     fill_string("0", message_error, 1);  
     message_error[1056] = '\0'; 
-    if (write(p, message_error,1057)){
+    if (write(p, message_error,1057) == -1){
         return;
     }
     fprintf(stdout, "OK\n");
     close(p);
-    return;
+
 }
 
 
@@ -222,7 +222,6 @@ void remove_box_handler(int rx, char *box_name, char *pipe_name){
     if (write(p, message_error,1057) == -1){
         return;
     }
-    return;
 }
 
 int compare(const void *a, const void *b){
@@ -286,7 +285,7 @@ int main(int argc, char **argv) {
 
         if (read(rx,char_code,1) == -1){
             fprintf(stderr, "[ERR]: read failed: %s\n", strerror(errno));
-            continue;
+            break;;
         }
 
         code = (uint8_t)atoi(char_code);
