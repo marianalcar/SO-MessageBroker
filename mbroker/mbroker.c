@@ -110,8 +110,8 @@ int main(int argc, char **argv) {
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
-
-                p = open(pipe_name, O_RDWR);
+                printf("%s\n",pipe_name);
+                p = open(pipe_name, O_RDONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
@@ -120,6 +120,7 @@ int main(int argc, char **argv) {
                     read(p, message,1024);
                     printf("%s\n",message);
                 }
+                break;
 
             case 2:
 
@@ -130,13 +131,13 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
                 }
-
+                break;
 
             case 3:
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
-                p = open(pipe_name, O_RDWR);
+                p = open(pipe_name, O_WRONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
@@ -170,6 +171,8 @@ int main(int argc, char **argv) {
                 message_error[1056] = '\0'; 
                 write(p, message_error,1057);
                 close(p);
+                break;
+
             case 5:
                 // !!!!
                 // falta eleminar do array
@@ -211,13 +214,17 @@ int main(int argc, char **argv) {
                 fill_string("0", message_error, 1); 
                 message_error[1056] = '\0';  
                 write(p, message_error,1057);
+                break;
 
             case 7:
                 for(int i = 0; i < count; i++) {
                     printf("%s \n", boxes[i].name);
                 }
+                break;
 
             case 8:
+                break;
+            default:
                 break;
         }
     }

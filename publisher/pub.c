@@ -36,16 +36,18 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[ERR]: write failed: %s\n", strerror(errno));
         return -1;
     }
-
+    char test[256];
+    memset(test, '\0', 256);
+    fill_string(argv[2],test, 0);
     // remove pipe if it does exist
-    if (unlink(argv[2]) != 0 && errno != ENOENT) {
+    if (unlink(test) != 0 && errno != ENOENT) {
         fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
                 strerror(errno));
         return -1;
     }
-
+    
     // create pipe
-    if (mkfifo(argv[2], 0640) != 0) {
+    if (mkfifo(test, 0640) != 0) {
         fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
         return -1;
     }
@@ -53,7 +55,8 @@ int main(int argc, char **argv) {
 
     // open pipe for writin
 
-    p = open(argv[2], O_WRONLY);
+    
+    p = open(test, O_WRONLY);
 
     if (p == -1 || p == EOF) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));

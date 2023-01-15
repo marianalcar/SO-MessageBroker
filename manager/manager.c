@@ -70,21 +70,25 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (unlink(argv[2]) != 0 && errno != ENOENT) {
+    char test[256];
+    memset(test, '\0', 256);
+    fill_string(argv[2],test, 0);
+
+    if (unlink(test) != 0 && errno != ENOENT) {
         fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
                 strerror(errno));
         return -1;
     }
 
     // create pipe
-    if (mkfifo(argv[2], 0640) != 0) {
+    if (mkfifo(test, 0640) != 0) {
         fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
         return -1;
     }
     
 
     // open pipe for writing
-    p = open(argv[2], O_RDWR);
+    p = open(test, O_RDONLY);
     read(p,message ,1057);
     printf("%s\n",message);
     
