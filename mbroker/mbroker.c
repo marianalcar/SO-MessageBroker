@@ -13,10 +13,9 @@
 
 
 typedef struct{
-        char name[32];
-        int number_subscribers;
-        uint64_t n_publisher;
-        uint64_t n_subscribers;
+    char name[32];
+    uint64_t n_publisher;
+    uint64_t n_subscribers;
 }box;
 
 box boxes[64];
@@ -224,6 +223,12 @@ void remove_box_handler(int rx, char *box_name, char *pipe_name){
     return;
 }
 
+int compare(const void *a, const void *b){
+    box* box1 = (box*)a;
+    box* box2 = (box*)b;
+    return strcmp(box1->name, box2->name);
+}
+
 int main(int argc, char **argv) {
     (void)argc;
     char pipe_name[256];
@@ -287,8 +292,14 @@ int main(int argc, char **argv) {
                 break;
 
             case 7:
+                if (count == 0){
+                    fprintf(stdout, "NO BOXES FOUND\n");
+                    break;
+                }
+                qsort(boxes, 64, sizeof(box),compare);
                 for(int i = 0; i < count; i++) {
-                    printf("%s \n", boxes[i].name);
+                    fprintf(stdout, "%s %zu %zu %zu\n", boxes[i].name, 
+                    sizeof(box), boxes[i].n_publisher, boxes[i].n_subscribers);
                 }
                 break;
 
