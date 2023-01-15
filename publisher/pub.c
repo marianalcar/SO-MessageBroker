@@ -51,7 +51,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
         return -1;
     }
-    printf("%s\n",argv[2]);
 
     // open pipe for writin
 
@@ -64,21 +63,21 @@ int main(int argc, char **argv) {
     }
 
 
+
     char message_full[1025];
     char message[1024];
     
-    while (scanf("%s", &message[1024]) != EOF){
+    while (scanf("%s", message) != EOF){
         fill_string("9", message_full,0);
         fill_string( message,message_full,1);
         message_full[1024] = '\0';
-
         if (write(p, message_full, 1025) == -1){
             return -1;
         }
     }
     close(rp);
     close(p);
-    unlink(argv[2]);
+    unlink(test);
     
     return 0;
 }

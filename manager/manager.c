@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
 
     int rp = open(argv[1], O_WRONLY);
     if(rp == -1 || rp == EOF) {
+        printf("mamamaam\n");
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
     }
@@ -73,6 +74,9 @@ int main(int argc, char **argv) {
     char test[256];
     memset(test, '\0', 256);
     fill_string(argv[2],test, 0);
+    text[255] = '\0';
+    printf("argv %s\n",argv[2]);
+    printf("test %s\n",test);
 
     if (unlink(test) != 0 && errno != ENOENT) {
         fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
@@ -88,7 +92,12 @@ int main(int argc, char **argv) {
     
 
     // open pipe for writing
+   
     p = open(test, O_RDONLY);
+    if (p == -1 || p == EOF) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;
+    }
     read(p,message ,1057);
     printf("%s\n",message);
     

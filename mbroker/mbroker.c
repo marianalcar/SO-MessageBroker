@@ -29,22 +29,22 @@ void fill_string(char* input_string, char* dest, int i) {
 }
 
 void removeElement(box array[], int size, int index) {
-  if (index >= size) {
+    if (index >= size) {
     return;
-  }
-  for (int i = index; i < size - 1; i++) {
-    array[i] = array[i + 1];
-  }
+    }
+    for (int i = index; i < size - 1; i++) {
+        array[i] = array[i + 1];
+    }
 }
 
 
-bool check_new_box(char* name_box) {
+int check_new_box(char* name_box) {
     for(int i = 0; i < count; i++) {
         if( strcmp(name_box, boxes[i].name)) {
-            return true;
+            return -1;
         }
     }
-    return false;
+    return 0;
 }
 
 
@@ -63,9 +63,6 @@ int main(int argc, char **argv) {
     tfs_init(NULL);
     //int max_sessions;
     
-    
-    
-
     if(argc < 3 || argc > 6) {
         return -1;
 
@@ -92,8 +89,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
     }
-
-
 
     while (1) {
 
@@ -137,16 +132,17 @@ int main(int argc, char **argv) {
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
+                printf("%s\n",pipe_name);
                 p = open(pipe_name, O_WRONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     return -1;
                 }
 
-                if(check_new_box(box_name)) {
+                if(check_new_box(box_name) == -1) {
                     fill_string("4", message_error ,0);
-                    fill_string("0", message_error, 1);   
-                    fill_string("box_name already existed", message_error, 2);
+                    fill_string("-1", message_error, 1);   
+                    fill_string("box_name already existed", message_error, 3);
                     message_error[1056] = '\0';
                     write(p, message_error,1057);
                     break;
@@ -157,7 +153,12 @@ int main(int argc, char **argv) {
                 b.have_publisher = 1;
                 fh = tfs_open(box_name, TFS_O_CREAT);
                 if (fh == -1) {
-                    printf("error mothafucker\n");
+                    fill_string("4", message_error ,0);
+                    fill_string("-1", message_error, 1);  
+                    fill_string("open failed\n", message_error, 3);
+                    message_error[1056] = '\0'; 
+                    write(p, message_error,1057);
+                    close(p);
                     return -1;
                 }
                 boxes[count] = b;
