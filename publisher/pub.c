@@ -14,6 +14,22 @@ void fill_string(char* input_string, char* dest, int i) {
 int main(int argc, char **argv) {
     //char register_pipe_name[256];
     int p;
+    char test[256];
+    memset(test, '\0', 256);
+    fill_string(argv[2],test, 0);
+    test[255] = '\0';
+    // remove pipe if it does exist
+    if (unlink(test) != 0 && errno != ENOENT) {
+        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
+                strerror(errno));
+        return -1;
+    }
+    
+    // create pipe
+    if (mkfifo(test, 0640) != 0) {
+        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
+        return -1;
+    }
     if (argc != 4) {
         fprintf(stderr, "usage: pub <register_pipe_name> <box_name>\n");
         return -1;
@@ -36,21 +52,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[ERR]: write failed: %s\n", strerror(errno));
         return -1;
     }
-    char test[256];
-    memset(test, '\0', 256);
-    fill_string(argv[2],test, 0);
-    // remove pipe if it does exist
-    if (unlink(test) != 0 && errno != ENOENT) {
-        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
-                strerror(errno));
-        return -1;
-    }
     
-    // create pipe
-    if (mkfifo(test, 0640) != 0) {
-        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
-        return -1;
-    }
 
     // open pipe for writin
 

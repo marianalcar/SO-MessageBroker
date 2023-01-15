@@ -24,6 +24,26 @@ int main(int argc, char **argv) {
         print_usage();
         return -1;
     }
+    char test[256];
+    memset(test, '\0', 256);
+    fill_string(argv[2],test, 0);
+    test[255] = '\0';
+    printf("argv %s\n",argv[2]);
+    printf("test %s\n",test);
+
+    if (unlink(test) != 0 && errno != ENOENT) {
+        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
+                strerror(errno));
+        return -1;
+    }
+
+    // create pipe
+    if (mkfifo(test, 0640) != 0) {
+        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
+        return -1;
+    }
+
+
     char text[289];
     char message[1057];
     int p;
@@ -70,22 +90,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    char pipe_final[256];
-    memset(pipe_final, '\0', 256);
-    fill_string(argv[2],pipe_final, 0);
-    pipe_final[255] = '\0';
-
-    if (unlink(pipe_final) != 0 && errno != ENOENT) {
-        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
-                strerror(errno));
-        return -1;
-    }
-
-    // create pipe
-    if (mkfifo(pipe_final, 0640) != 0) {
-        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
-        return -1;
-    }
     
 
     // open pipe for writing
@@ -95,6 +99,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
     }
+
+    
     read(p,message ,1057);
     printf("%s\n",message);
 

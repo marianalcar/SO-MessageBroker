@@ -163,7 +163,8 @@ int main(int argc, char **argv) {
 
                 read(rx, pipe_name,256);
                 read(rx, box_name, 32);
-                p = open("/tmp/pipe", O_WRONLY);
+
+                p = open(pipe_name, O_WRONLY);
                 if (p == -1) {
                     fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
                     break;
