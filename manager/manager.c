@@ -1,9 +1,15 @@
 #include "logging.h"
 #include <string.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
 
-void fill_string(char* input_string, char* dest, size_t size) {
-    memset(dest, '\0', size);
-    memcpy(dest, input_string, strlen(input_string));
+void fill_string(char* input_string, char* dest, int i) {
+    memcpy(dest + i, input_string, strlen(input_string));
 }
 
 static void print_usage() {
@@ -14,27 +20,75 @@ static void print_usage() {
 }
 
 int main(int argc, char **argv) {
-    char register_pipe_name[256];
-    char pipe_name[256];
-    char box_name[32];
     if ( 0 < argc && argc > 5) {
         print_usage();
         return -1;
     }
-    fill_string(argv[1], register_pipe_name,256);
-    fill_string(argv[2], pipe_name,256);
+    char text[289];
+    char message[1057];
+    int p;
+    memset(text, '\0', 289);
+    memset(message, '\0', 1056);
 
+    int rp = open(argv[1], O_WRONLY);
+    if(rp == -1 || rp == EOF) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;
+    }
+    printf("%s\n",argv[2]);
+    if(strcmp(argv[3], "create") == 0) {
+        fill_string("3", text ,0);
+        fill_string(argv[2], text, 1);   
+        fill_string(argv[4], text, 257);
+        text[288] = '\0';
+        if(write(rp,text,289) == -1) {
+            fprintf(stderr, "[ERR]: write failed: %s\n", strerror(errno));
+            return -1;
+        }
 
-    if(strncmp(argv[3], "create",6)) {
-        fill_string(argv[4], box_name,32);
     }
 
-    else if(strncmp(argv[3],"remove",6)) {
-        fill_string(argv[4], box_name,32);
+    else if(strcmp(argv[3],"remove") == 0) {
+        fill_string("5", text ,0);
+        fill_string(argv[2], text, 1);   
+        fill_string(argv[4], text, 257);
+        text[288] = '\0';
+        if(write(rp,text,289) == -1) {
+            fprintf(stderr, "[ERR]: write failed: %s\n", strerror(errno));
+            return -1;
+        }
     }
 
-    else if(strncmp(argv[3],"list",4)) {
+    else if(strcmp(argv[3],"list") == 0) {
+        fill_string("7", text ,0);
+        fill_string(argv[2], text, 1);   
+        fill_string(argv[4], text, 257);
+        text[288] = '\0';
+        if(write(rp,text,289) == -1) {
+            fprintf(stderr, "[ERR]: write failed: %s\n", strerror(errno));
+            return -1;
+        }
     }
+
+    if (unlink(argv[2]) != 0 && errno != ENOENT) {
+        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
+                strerror(errno));
+        return -1;
+    }
+
+    // create pipe
+    if (mkfifo(argv[2], 0640) != 0) {
+        fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
+        return -1;
+    }
+    
+
+    // open pipe for writing
+    p = open(argv[2], O_RDONLY);
+    read(p,message ,1057);
+    printf("%s\n",message);
+    
+
 
     return 0;
 }

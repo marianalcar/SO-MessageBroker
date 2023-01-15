@@ -18,19 +18,14 @@ void fill_string(char* input_string, char* dest, int i) {
 }*/
 
 int main(int argc, char **argv) {
-    char register_pipe_name[256];
-    char pipe_name[256]; 
+    
 
     if (argc != 4) {
         fprintf(stderr, "usage: sub <register_pipe_name> <box_name>\n");
         return -1;
     }
 
-    int tx = open(register_pipe_name, O_WRONLY);
-    if (tx == -1 || tx == EOF) {
-        printf("mariana talvez seja gay\n");
-        return -1;
-    }
+
     char text[289];
     memset(text, '\0', 289);
 
@@ -38,20 +33,27 @@ int main(int argc, char **argv) {
     fill_string(argv[2], text, 1);   
     fill_string(argv[3], text, 257); 
     text[288] = '\0';
+
+    int tx = open(argv[1], O_WRONLY);
+    if (tx == -1 || tx == EOF) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;
+    }
+
     if (write(tx,text,289) == -1){
         printf("mariana é gay\n");
         return -1;
     };
 
     // remove pipe if it does exist
-    if (unlink(pipe_name) != 0 && errno != ENOENT) {
-        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", pipe_name,
+    if (unlink(argv[2]) != 0 && errno != ENOENT) {
+        fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[2],
                 strerror(errno));
         return -1;
     }
 
     // create pipe
-    if (mkfifo(pipe_name, 0640) != 0) {
+    if (mkfifo(argv[2], 0640) != 0) {
         fprintf(stderr, "[ERR]: mkfifo failed: %s\n", strerror(errno));
         return -1;
     }
@@ -59,7 +61,7 @@ int main(int argc, char **argv) {
     // open pipe for writing
     // this waits for someone to open it for reading
     
-    int p = open(pipe_name, O_RDONLY);
+    int p = open(argv[2], O_RDONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
@@ -77,12 +79,12 @@ int main(int argc, char **argv) {
         } else if (ret == -1) {
             close(tx);
             close(p);
-            unlink(pipe_name);
+            unlink(argv[2]);
             //sigint_handler;
         }
     }
 
     close(tx);
-    unlink(pipe_name);
+    unlink(argv[2]);
     return 0;
 }
