@@ -121,12 +121,14 @@ void create_box_handle(int rx, char *box_name, char *pipe_name){
         fill_string("-1", message_error, 1);   
         fill_string("box_name already existed", message_error, 3);
         message_error[1056] = '\0';
-        write(p, message_error,1057);
+        if(write(p, message_error,1057) == -1){
+            return;
+        }
         return;
     }
     
     box b;
-    strncpy(b.name, box_name,32);
+    strcpy(b.name, box_name);
     b.n_publisher = 1;
     int fh = tfs_open(box_name, TFS_O_CREAT);
     if (fh == -1) {

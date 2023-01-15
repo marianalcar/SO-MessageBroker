@@ -101,7 +101,9 @@ int main(int argc, char **argv) {
     }
 
     
-    read(p,message ,1057);
+    if(read(p,message ,1057) == -1){
+        return -1;
+    };
     printf("%s\n",message);
 
     close(rp);

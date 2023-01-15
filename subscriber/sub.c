@@ -12,9 +12,11 @@ void fill_string(char* input_string, char* dest, int i) {
     memcpy(dest + i, input_string, strlen(input_string));
 }
 
+volatile sig_atomic_t flag = 1;
 
-int sigint_handler(int signo) {
-    return 0;
+void sigint_handler(int signo) {
+    (void)signo;
+    flag = 0;
 }
 
 int main(int argc, char **argv) {
@@ -41,7 +43,6 @@ int main(int argc, char **argv) {
     }
 
     if (write(tx,text,289) == -1){
-        printf("mariana é gay\n");
         return -1;
     };
 
@@ -71,20 +72,18 @@ int main(int argc, char **argv) {
 
     char message[1024];
 
-    while (1) {
+    while (flag) {
         ssize_t ret = read(p, message, 1024 - 1);
         if (ret == 0) {
             fprintf(stderr, "[INFO]: pipe closed\n");
             break;
-        } else if (ret == -1) {
-            close(tx);
-            close(p);
-            unlink(argv[2]);
-            sigint_handler;
+        } else if (ret == -1){
+            break;
         }
     }
 
     close(tx);
+    close(p);
     unlink(argv[2]);
     return 0;
 }
