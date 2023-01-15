@@ -38,7 +38,7 @@ void removeElement(box array[], int size, int index) {
 
 int check_new_box(char* name_box) {
     for(int i = 0; i < count; i++) {
-        if( strcmp(name_box, boxes[i].name)) {
+        if( strcmp(name_box, boxes[i].name) == 0) {
             return -1;
         }
     }
@@ -56,63 +56,65 @@ int check_if_has_publisher(char* name_box) {
     return 0;
 }
 
-int publisher_handle(int rx, char *box_name, char *pipe_name){
+void publisher_handle(int rx, char *box_name, char *pipe_name){
     if (read(rx, pipe_name,256) == -1){
-        return -1;
+        return;
     };
     if (read(rx, box_name, 32) == -1){
-        return -1;
+        return;
     };
     //printf("%s\n",pipe_name);
     if (check_if_has_publisher(box_name) == -1){
-        return -1;
+        return;
     }
     int p = open(pipe_name, O_RDONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
-        return -1;
+        return;
     }
-
-    /*    while(1) {
+    /*
+        while(1) {
         read(p, message,1024);
-        printf("%s\n",meessage);
-                }*/
-    return 0;
+        printf("%s\n",message);
+    }
+    */
+   return;
+                
 }
 
-int subscriber_handle(int rx, char *box_name, char *pipe_name){
+void subscriber_handle(int rx, char *box_name, char *pipe_name){
     if (read(rx, pipe_name,256) == -1){
-        return -1;
-    };
+        return;
+    }
     if (read(rx, box_name, 32) == -1){
-        return -1;
-    };
+        return;
+    }
     int p = open(pipe_name, O_RDONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
-        return -1;;
+        return;
     }
-    return 0;
+    return;
 }
 
-int create_box_handle(int rx, char *box_name, char *pipe_name){
+void create_box_handle(int rx, char *box_name, char *pipe_name){
     char message_error[1057];
     memset(message_error, '\0', 1057);
     if(read(rx, pipe_name,256) == -1){
-        return -1;
-    };
+        return;
+    }
     if(read(rx, box_name, 32) == -1){
-        return -1;
-    };
+        return;
+    }
 
     if (count == 64){
-        return -1;
+        return;
     }
 
     int p = open(pipe_name, O_WRONLY);
     if (p == -1) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
-        return -1;
+        return;
     }
     if(check_new_box(box_name) == -1) {
         fill_string("4", message_error ,0);
@@ -120,7 +122,7 @@ int create_box_handle(int rx, char *box_name, char *pipe_name){
         fill_string("box_name already existed", message_error, 3);
         message_error[1056] = '\0';
         write(p, message_error,1057);
-        return -1;
+        return;
     }
     
     box b;
@@ -133,10 +135,10 @@ int create_box_handle(int rx, char *box_name, char *pipe_name){
         fill_string("open failed\n", message_error, 3);
         message_error[1056] = '\0'; 
         if (write(p, message_error,1057) == -1){
-            return -1;
-        };
+            return;
+        }
         close(p);
-        return -1;
+        return;
     }
     //works
     boxes[count] = b;
@@ -146,22 +148,23 @@ int create_box_handle(int rx, char *box_name, char *pipe_name){
     fill_string("0", message_error, 1);  
     message_error[1056] = '\0'; 
     if (write(p, message_error,1057)){
-        return -1;
-    };
+        return;
+    }
     fprintf(stdout, "OK\n");
     close(p);
-    return 0;
+    return;
 }
 
-int remove_box_handle(int rx, char *box_name, char *pipe_name){
+
+void remove_box_handler(int rx, char *box_name, char *pipe_name){
     char message_error[1057];
     memset(message_error, '\0', 1057);
     if(read(rx, pipe_name,256) == -1){
-        return -1;
-    };
+        return;
+    }
     if (read(rx, box_name, 32) == -1){
-        return -1;
-    };
+        return;
+    }
     int p = open(pipe_name, O_WRONLY);
     if (p == -1) {
         fill_string("6", message_error ,0);
@@ -169,10 +172,11 @@ int remove_box_handle(int rx, char *box_name, char *pipe_name){
         fill_string("[ERR]: open failed", message_error, 2); 
         message_error[1056] = '\0';
         if (write(p, message_error,1057)== -1){
-            return -1;
-        };
-        return -1;
+            return;
+        }
+        return;
     }
+
     int fh = tfs_open(box_name, TFS_O_CREAT);
 
     if (fh == -1) {
@@ -181,10 +185,11 @@ int remove_box_handle(int rx, char *box_name, char *pipe_name){
         fill_string("[ERR]: open failed", message_error, 2); 
         message_error[1056] = '\0';
         if (write(p, message_error,1057) == -1){
-            return -1;
-        };
-        return -1;
+            return;
+        }
+        return;
     }
+    
 
     tfs_close(fh);
     for(int i = 0; i < count; i++) {
@@ -194,17 +199,18 @@ int remove_box_handle(int rx, char *box_name, char *pipe_name){
             remove_from_open_file_table(fh);
             count--;
             fprintf(stdout, "OK\n");
-            return 0;;
+            return;
         }
     }
+
     
     fill_string("6", message_error ,0);
     fill_string("0", message_error, 1); 
     message_error[1056] = '\0';  
     if (write(p, message_error,1057) == -1){
-        return -1;
-    };
-    return -1;
+        return;
+    }
+    return;
 }
 
 int main(int argc, char **argv) {
@@ -248,34 +254,25 @@ int main(int argc, char **argv) {
 
         if (read(rx,char_code,1) == -1){
             fprintf(stderr, "[ERR]: read failed: %s\n", strerror(errno));
-            return -1;
+            continue;
         }
 
         code = (uint8_t)atoi(char_code);
 
         switch(code) {
             case 1:
-                if (publisher_handle(rx, box_name, pipe_name) == -1){
-                    break;
-                }
+                publisher_handle(rx, box_name, pipe_name);
                 break;
-
             case 2:
-                if (subscriber_handle(rx, box_name, pipe_name) == -1){
-                    break;
-                }
+                subscriber_handle(rx, box_name, pipe_name);
                 break;
 
             case 3:
-                if (create_box_handle(rx, box_name, pipe_name) == -1){
-                    break;
-                }
+                create_box_handle(rx, box_name, pipe_name);
                 break;
-            
+                
             case 5:
-                if (remove_box_handle(rx, box_name, pipe_name) == -1){
-                    break;
-                }
+                remove_box_handler(rx, box_name, pipe_name);
                 break;
 
             case 7:
@@ -284,8 +281,6 @@ int main(int argc, char **argv) {
                 }
                 break;
 
-            case 8:
-                break;
             default:
                 break;
         }

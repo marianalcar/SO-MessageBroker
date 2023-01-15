@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
     // open pipe for writing
    
-    p = open(pipe_final, O_RDONLY);
+    p = open(test, O_RDONLY);
     if (p == -1 || p == EOF) {
         fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
         return -1;
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
     close(rp);
     close(p);
-    unlink(pipe_final);
+    unlink(test);
 
     return 0;
 }
