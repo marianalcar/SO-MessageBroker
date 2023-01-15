@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <stdint.h>
 #include "state.h"
+#include <pthread.h>
+#include "producer-consumer.h"
 
 
 typedef struct{
@@ -229,23 +231,37 @@ int compare(const void *a, const void *b){
     return strcmp(box1->name, box2->name);
 }
 
+void listing(){
+    if (count == 0){
+        fprintf(stdout, "NO BOXES FOUND\n");
+        return;
+    }
+    qsort(boxes, 64, sizeof(box),compare);
+    for(int i = 0; i < count; i++) {
+        fprintf(stdout, "%s %zu %zu %zu\n", boxes[i].name, 
+        sizeof(box), boxes[i].n_publisher, boxes[i].n_subscribers);
+    }
+    return;
+}
+
 int main(int argc, char **argv) {
     (void)argc;
     char pipe_name[256];
     char box_name[32];
     char char_code[1024];
 
+    pc_queue_t queue;
+    pcq_create(&queue,100);
+
+
     uint8_t code;
     tfs_init(NULL);
-    //int max_sessions;
     
     if(argc < 3 || argc > 6) {
         return -1;
 
     }
 
-    //fill_string(argv[1], register_pipe_name,256);
-    //max_sessions = atoi(argv[2]);
 
     if (unlink(argv[1]) != 0 && errno != ENOENT) {
         fprintf(stderr, "[ERR]: unlink(%s) failed: %s\n", argv[1],
@@ -274,7 +290,7 @@ int main(int argc, char **argv) {
         }
 
         code = (uint8_t)atoi(char_code);
-
+        
         switch(code) {
             case 1:
                 publisher_handle(rx, box_name, pipe_name);
@@ -292,21 +308,14 @@ int main(int argc, char **argv) {
                 break;
 
             case 7:
-                if (count == 0){
-                    fprintf(stdout, "NO BOXES FOUND\n");
-                    break;
-                }
-                qsort(boxes, 64, sizeof(box),compare);
-                for(int i = 0; i < count; i++) {
-                    fprintf(stdout, "%s %zu %zu %zu\n", boxes[i].name, 
-                    sizeof(box), boxes[i].n_publisher, boxes[i].n_subscribers);
-                }
+                
                 break;
 
             default:
                 break;
         }
     }
+    pcq_destroy(&queue);
     return 0;
 
 }
