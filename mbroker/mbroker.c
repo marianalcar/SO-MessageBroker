@@ -96,14 +96,100 @@ int subscriber_handle(int rx, char *box_name, char *pipe_name){
     }
     return 0;
 }
+
+int create_box_handle(int rx, char *box_name, char *pipe_name){
+    char message_error[1057];
+    memset(message_error, '\0', 1057);
+    read(rx, pipe_name,256);
+    read(rx, box_name, 32);
+
+    int p = open(pipe_name, O_WRONLY);
+    if (p == -1) {
+        fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+        return -1;
+    }
+    if(check_new_box(box_name) == -1) {
+        fill_string("4", message_error ,0);
+        fill_string("-1", message_error, 1);   
+        fill_string("box_name already existed", message_error, 3);
+        message_error[1056] = '\0';
+        write(p, message_error,1057);
+        return -1;
+    }
+    
+    box b;
+    strncpy(b.name, box_name,32);
+    b.n_publisher = 1;
+    int fh = tfs_open(box_name, TFS_O_CREAT);
+    if (fh == -1) {
+        fill_string("4", message_error ,0);
+        fill_string("-1", message_error, 1);  
+        fill_string("open failed\n", message_error, 3);
+        message_error[1056] = '\0'; 
+        write(p, message_error,1057);
+        close(p);
+        return -1;
+    }
+    boxes[count] = b;
+    count ++;
+    tfs_close(fh);
+    fill_string("4", message_error ,0);
+    fill_string("0", message_error, 1);  
+    message_error[1056] = '\0'; 
+    write(p, message_error,1057);
+    close(p);
+    return 0;;
+}
+
+int remove_box_handler(int rx, char *box_name, char *pipe_name){
+    char message_error[1057];
+    memset(message_error, '\0', 1057);
+    read(rx, pipe_name,256);
+    read(rx, box_name, 32);
+    int p = open(pipe_name, O_WRONLY);
+    if (p == -1) {
+        fill_string("6", message_error ,0);
+        fill_string("0", message_error, 1);  
+        fill_string("[ERR]: open failed", message_error, 2); 
+        message_error[1056] = '\0';
+        write(p, message_error,1057);
+        return -1;
+    }
+    int fh = tfs_open(box_name, TFS_O_CREAT);
+
+    if (fh == -1) {
+        fill_string("6", message_error ,0);
+        fill_string("0", message_error, 1);  
+        fill_string("[ERR]: open failed", message_error, 2); 
+        message_error[1056] = '\0';
+        write(p, message_error,1057);
+        return -1;
+    }
+
+    tfs_close(fh);
+    for(int i = 0; i < count; i++) {
+        if( strcmp(box_name, boxes[i].name)) {
+            removeElement(boxes,count,i);
+            return 0;;
+        }
+    }
+    inode_delete(get_open_file_entry(fh) -> of_inumber);
+    remove_from_open_file_table(fh);
+    count--;
+    
+    fill_string("6", message_error ,0);
+    fill_string("0", message_error, 1); 
+    message_error[1056] = '\0';  
+    write(p, message_error,1057);
+    return -1;
+}
+
 int main(int argc, char **argv) {
     (void)argc;
     char pipe_name[256];
     char box_name[32];
     char char_code[1024];
     char message[1024];
-    char message_error[1057];
-    memset(message_error, '\0', 1057);
 
     int p,fh;
     uint8_t code;
@@ -160,92 +246,15 @@ int main(int argc, char **argv) {
                 break;
 
             case 3:
-
-                read(rx, pipe_name,256);
-                read(rx, box_name, 32);
-
-                p = open(pipe_name, O_WRONLY);
-                if (p == -1) {
-                    fprintf(stderr, "[ERR]: open failed: %s\n", strerror(errno));
+                if (create_box_handle(rx, box_name, pipe_name) == -1){
                     break;
                 }
-
-                if(check_new_box(box_name) == -1) {
-                    fill_string("4", message_error ,0);
-                    fill_string("-1", message_error, 1);   
-                    fill_string("box_name already existed", message_error, 3);
-                    message_error[1056] = '\0';
-                    write(p, message_error,1057);
-                    break;
-                }
-
-                box b;
-                strncpy(b.name, box_name,32);
-                b.n_publisher = 1;
-                fh = tfs_open(box_name, TFS_O_CREAT);
-                if (fh == -1) {
-                    fill_string("4", message_error ,0);
-                    fill_string("-1", message_error, 1);  
-                    fill_string("open failed\n", message_error, 3);
-                    message_error[1056] = '\0'; 
-                    write(p, message_error,1057);
-                    close(p);
-                    break;
-                }
-                boxes[count] = b;
-                count ++;
-                tfs_close(fh);
-
-                
-
-                fill_string("4", message_error ,0);
-                fill_string("0", message_error, 1);  
-                message_error[1056] = '\0'; 
-                write(p, message_error,1057);
-                close(p);
                 break;
-
+            
             case 5:
-                // !!!!
-                // falta eleminar do array
-                read(rx, pipe_name,256);
-                read(rx, box_name, 32);
-                p = open(pipe_name, O_WRONLY);
-                if (p == -1) {
-                    fill_string("6", message_error ,0);
-                    fill_string("0", message_error, 1);  
-                    fill_string("[ERR]: open failed", message_error, 2); 
-                    message_error[1056] = '\0';
-                    write(p, message_error,1057);
-                    return -1;
+                if (remove_box_handle(rx, box_name, pipe_name) == -1){
+                    break;
                 }
-                fh = tfs_open(box_name, TFS_O_CREAT);
-
-                if (fh == -1) {
-                    fill_string("6", message_error ,0);
-                    fill_string("0", message_error, 1);  
-                    fill_string("[ERR]: open failed", message_error, 2); 
-                    message_error[1056] = '\0';
-                    write(p, message_error,1057);
-                    return -1;
-                }
-
-                tfs_close(fh);
-                for(int i = 0; i < count; i++) {
-                    if( strcmp(box_name, boxes[i].name)) {
-                        removeElement(boxes,count,i);
-                        break;
-                    }
-                }
-                inode_delete(get_open_file_entry(fh) -> of_inumber);
-                remove_from_open_file_table(fh);
-                count--;
-
-
-                fill_string("6", message_error ,0);
-                fill_string("0", message_error, 1); 
-                message_error[1056] = '\0';  
-                write(p, message_error,1057);
                 break;
 
             case 7:

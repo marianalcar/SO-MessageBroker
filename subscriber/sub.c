@@ -13,9 +13,9 @@ void fill_string(char* input_string, char* dest, int i) {
 }
 
 
-/*int sigint_handler(int signo) {
+int sigint_handler(int signo) {
     return 0;
-}*/
+}
 
 int main(int argc, char **argv) {
     
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    //signal(SIGINT,sigint_handler);
+    signal(SIGINT,sigint_handler);
 
     char message[1024];
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
             close(tx);
             close(p);
             unlink(argv[2]);
-            //sigint_handler;
+            sigint_handler;
         }
     }
 
